@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Clock Display -->
+    <div class="floating-clock position-fixed bottom-0 start-0 p-3 mb-4 ms-4">
+        <div class="d-flex align-items-center bg-white rounded-3 shadow-sm p-2">
+            <div class="me-2">
+                <i class="fas fa-clock fa-lg text-primary"></i>
+            </div>
+            <div>
+                <span class="small" id="current-time">Loading...</span>
+                <br>
+                <small class="text-muted" id="current-date">Loading...</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Display -->
+    <div class="section-display mb-4">
+        <h3><span id="current-section-display">{{ current_section }}</span></h3>
+    </div>
+
+    <!-- Hidden data for JavaScript -->
+    <script type="application/json" id="sections-data">
+        {{ sections|tojson|safe }}
+    </script>
+
+    <div class="classes-section">
+        <!-- Current Classes -->
+        <div class="current-classes card">
+            <h2 class="section-title">Current Classes</h2>
+            <div class="section-content">
+                {% if current_holiday %}
+                    <div class="holiday-message">
+                        <div class="holiday-icon">
+                            <i class="fas fa-umbrella-beach fa-3x text-warning"></i>
+                        </div>
+                        <h3 class="holiday-title">{{ current_holiday.holiday_name }}</h3>
+                        {% if current_holiday.description %}
+                            <p class="holiday-description">{{ current_holiday.description }}</p>
+                        {% endif %}
+                        <div class="holiday-dates">
+                            <span class="badge bg-info">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ current_holiday.start_date.strftime('%B %d, %Y') }} - {{ current_holiday.end_date.strftime('%B %d, %Y') }}
+                            </span>
+                        </div>
+                        <p class="holiday-note">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Classes are not running during this holiday period. Enjoy your time off!
+                        </p>
+                    </div>
+                {% elif current_classes %}
+                    {% for class in current_classes %}
+                        <div class="class-card {% if class.status == 'no-classes' %}no-class{% endif %}">
+                            {% if class.status != 'no-classes' %}
+                                <div class="class-header">
+                                    <h3 class="class-title">{{ class.subject }}</h3>
+                                    <span class="status-badge ongoing">CURRENT</span>
+                                </div>
+                                <div class="class-details">
+                                    <div class="detail-item">
+                                        <i class="fas fa-calendar-day"></i>
+                                        <span class="detail-label">Day:</span>
+                                        <span class="detail-value">{{ class.day }}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <i class="fas fa-clock"></i>
+                                        <span class="detail-label">Time:</span>
+                                        <span class="detail-value">{{ class.time }}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <i class="fas fa-door-open"></i>
+                                        <span class="detail-label">Room:</span>
+                                        <span class="detail-value">{{ class.room }}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <i class="fas fa-user-tie"></i>
+                                        <span class="detail-label">Faculty:</span>
+                                        {% if class.faculty and class.faculty != 'Not assigned' and class.faculty != 'nan' and class.faculty.strip() %}
+                                            <span class="detail-value">{{ class.faculty }}</span>
+                                        {% else %}
+                                            <span class="detail-value text-muted">Not assigned</span>
+                                        {% endif %}
+                                    </div>
+                                    {% if class.time_remaining_str %}
+                                        <div class="time-indicator">
+                                            <i class="fas fa-hourglass-half"></i>
+                                            {{ class.time_remaining_str }} remaining
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="no-class-message">
+                                    <i class="fas fa-info-circle"></i>
+                                    No Current Classes
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-items-message">
+                        <i class="fas fa-info-circle"></i>
+                        No current classes to display
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Upcoming Classes -->
+        <div class="upcoming-classes card">
+            <h2 class="section-title">Upcoming Classes</h2>
+            <div class="section-content">
+                {% if current_holiday %}
+                    <div class="holiday-message">
+                        <div class="holiday-icon">
+                            <i class="fas fa-calendar-check fa-3x text-success"></i>
+                        </div>
+                        <h3 class="holiday-title">Classes Resume After Holiday</h3>
+                        <p class="holiday-description">
+                            Regular class schedules will resume after {{ current_holiday.end_date.strftime('%B %d, %Y') }}.
+                        </p>
+                        <div class="holiday-dates">
+                            <span class="badge bg-success">
+                                <i class="fas fa-calendar-plus me-1"></i>
+                                Classes resume: {{ current_holiday.end_date.strftime('%A, %B %d, %Y') }}
+                            </span>
+                        </div>
+                    </div>
+                {% elif upcoming_classes %}
+                    {% for class in upcoming_classes %}
+                        <div class="class-card {% if class.status == 'no-classes' %}no-class{% endif %}">
+                            {% if class.status != 'no-classes' %}
+                                <div class="class-header">
+                                    <h3 class="class-title">{{ class.subject }}</h3>
+                                    <span class="status-badge upcoming">UPCOMING</span>
+                                </div>
+                                <div class="class-details">
+                                    <div class="detail-item">
+                                        <i class="fas fa-calendar-day"></i>
+                                        <span class="detail-label">Day:</span>
+                                        <span class="detail-value">{{ class.day }}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <i class="fas fa-clock"></i>
+                                        <span class="detail-label">Time:</span>
+                                        <span class="detail-value">{{ class.time }}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <i class="fas fa-door-open"></i>
+                                        <span class="detail-label">Room:</span>
+                                        <span class="detail-value">{{ class.room }}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <i class="fas fa-user-tie"></i>
+                                        <span class="detail-label">Faculty:</span>
+                                        {% if class.faculty and class.faculty != 'Not assigned' and class.faculty != 'nan' and class.faculty.strip() %}
+                                            <span class="detail-value">{{ class.faculty }}</span>
+                                        {% else %}
+                                            <span class="detail-value text-muted">Not assigned</span>
+                                        {% endif %}
+                                    </div>
+                                    {% if class.time_until_str %}
+                                        <div class="time-indicator starts-in">
+                                            <i class="fas fa-hourglass-start"></i>
+                                            Starts in {{ class.time_until_str }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="no-class-message">
+                                    <i class="fas fa-info-circle"></i>
+                                    No Upcoming Classes
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-items-message">
+                        <i class="fas fa-info-circle"></i>
+                        No upcoming classes to display
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Notices -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-bullhorn me-2"></i>Recent Notices
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if notices %}
+                <div class="notices-scroll-container">
+                    <div class="row">
+                        {% for notice in notices %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h6 class="card-title mb-0">{{ notice.title }}</h6>
+                                        {% if notice.category %}
+                                            <span class="badge bg-primary">{{ notice.category }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">General</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="card-body">
+                                        {% if notice.photo_filename %}
+                                            <div class="mb-2">
+                                                <img src="{{ url_for('static', filename='uploads/notices/' + notice.photo_filename) }}" 
+                                                     alt="Notice photo" class="img-fluid rounded" style="max-height: 120px; width: 100%; object-fit: cover;">
+                                            </div>
+                                        {% endif %}
+                                        {% if notice.description %}
+                                            <p class="card-text small">{{ notice.description|truncate(100) }}</p>
+                                        {% endif %}
+                                        <p class="card-text"><small class="text-muted">Posted: {{ notice.upload_date.strftime('%Y-%m-%d') }}</small></p>
+                                        {% if notice.filename %}
+                                            <div class="mt-2">
+                                                {% if notice.filename.lower().endswith('.pdf') %}
+                                                    <button class="pdf-preview-btn btn btn-sm btn-outline-primary" 
+                                                            data-pdf-url="{{ url_for('preview_pdf', filename=notice.filename) }}" 
+                                                            data-title="{{ notice.title }}" 
+                                                            title="Preview PDF">
+                                                        <i class="fas fa-eye"></i> Preview
+                                                    </button>
+                                                {% endif %}
+                                                <a href="{{ url_for('download_notice', filename=notice.filename) }}" 
+                                                   class="btn btn-sm btn-outline-secondary" 
+                                                   download 
+                                                   title="Download">
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="card-footer">
+                                        <small class="text-muted">
+                                            {% if notice.expiration_date %}
+                                                Expires: {{ notice.expiration_date.strftime('%Y-%m-%d') }}
+                                            {% else %}
+                                                No expiration
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('notices') }}" class="btn btn-primary">
+                        <i class="fas fa-external-link-alt me-1"></i>View All Notices
+                    </a>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h6>No Notices Available</h6>
+                    <p class="text-muted">There are no notices to display at the moment.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/section-switcher.js') }}"></script>
+<script src="{{ url_for('static', filename='js/pdf-viewer.js') }}"></script>
+
+<!-- Add JavaScript for clock and temperature -->
+<script>
+    // Update clock every second
+    function updateClock() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true 
+        });
+        const dateString = now.toLocaleDateString('en-US', { 
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        document.getElementById('current-time').textContent = timeString;
+        document.getElementById('current-date').textContent = dateString;
+    }
+
+    // Update temperature (using OpenWeatherMap API)
+    async function updateTemperature() {
+        try {
+            // Replace with your actual API key and city
+            const apiKey = 'YOUR_API_KEY';
+            const city = 'YOUR_CITY';
+            const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
+            const data = await response.json();
+            
+            if (data.main && data.main.temp) {
+                const temp = Math.round(data.main.temp);
+                document.getElementById('current-temperature').textContent = `${temp}°C`;
+            }
+        } catch (error) {
+            console.error('Error fetching temperature:', error);
+            document.getElementById('current-temperature').textContent = 'N/A';
+        }
+    }
+
+    // Update clock immediately and then every second
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Update temperature immediately and then every 5 minutes
+    updateTemperature();
+    setInterval(updateTemperature, 300000); // 5 minutes
+</script>
+{% endblock %}

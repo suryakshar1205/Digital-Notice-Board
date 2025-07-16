@@ -1,0 +1,46 @@
+{% if class.status != 'no-classes' %}
+    <div class="class-card">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <h4 class="mb-0">{{ class.subject }}</h4>
+            <span class="badge bg-primary">{{ class.section }}</span>
+        </div>
+        <div class="class-details">
+            <p>
+                <i class="fas fa-calendar-day"></i>
+                <strong>Day:</strong>
+                {{ class.day }}
+            </p>
+            <p>
+                <i class="fas fa-clock"></i>
+                <strong>Time:</strong>
+                {{ class.time }}
+            </p>
+            <p>
+                <i class="fas fa-map-marker-alt"></i>
+                <strong>Room:</strong>
+                {{ class.room }}
+            </p>
+            {% if class.status == 'ongoing' and class.time_remaining %}
+                <div class="time-remaining">
+                    {{ class.time_remaining_str }} remaining
+                </div>
+            {% endif %}
+            {% if class.status == 'upcoming' and class.time_until_str %}
+                <p>
+                    <i class="fas fa-hourglass-start"></i>
+                    <strong>Starting in:</strong>
+                    {{ class.time_until_str }}
+                </p>
+            {% endif %}
+        </div>
+    </div>
+{% else %}
+    <div class="no-classes-message">
+        <i class="fas fa-info-circle"></i>
+        {% if class in current_classes %}
+            No classes are currently in progress for {{ class.section }}.
+        {% else %}
+            No upcoming classes scheduled for {{ class.section }}.
+        {% endif %}
+    </div>
+{% endif %} 

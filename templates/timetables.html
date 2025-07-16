@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetables - Digital Notice Board</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">Digital Notice Board</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('timetables') }}">Timetables</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('notices') }}">Notices</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        {% if timetables %}
+            {% for timetable in timetables %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">{{ timetable.name }}</h5>
+                        <small class="text-muted">Uploaded on {{ timetable.upload_date.strftime('%B %d, %Y') }}</small>
+                    </div>
+                    <div class="card-body">
+                        {% set sections = timetable.sections|parse_json|default([]) %}
+                        {% if sections %}
+                            <div class="timetable-container">
+                                <ul class="nav nav-tabs" role="tablist">
+                                    {% for section in sections %}
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link {% if loop.first %}active{% endif %}" 
+                                                    id="section-{{ section }}-tab" 
+                                                    data-bs-toggle="tab" 
+                                                    data-bs-target="#section-{{ section }}" 
+                                                    type="button" 
+                                                    role="tab">
+                                                {{ section }}
+                                            </button>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                                
+                                <div class="tab-content">
+                                    {% for section in sections %}
+                                        <div class="tab-pane fade {% if loop.first %}show active{% endif %}" 
+                                             id="section-{{ section }}" 
+                                             role="tabpanel">
+                                            {% set schedule_data = timetable.schedule_data|parse_json|default({}) %}
+                                            {% set section_schedule = schedule_data[section]|default([]) %}
+                                            {% if section_schedule %}
+                                                {% set days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] %}
+                                                <div class="row">
+                                                    {% for day in days %}
+                                                        <div class="col-md-4 mb-3">
+                                                            <div class="day-card">
+                                                                <h6 class="day-header">{{ day }}</h6>
+                                                                {% set day_classes = [] %}
+                                                                {% for class in section_schedule %}
+                                                                    {% if class.day == day %}
+                                                                        {% set _ = day_classes.append(class) %}
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                                
+                                                                {% if day_classes %}
+                                                                    <div class="class-list">
+                                                                        {% for class in day_classes|sort(attribute='time') %}
+                                                                            <div class="class-item">
+                                                                                <div class="class-time">{{ class.time }}</div>
+                                                                                <div class="class-subject">{{ class.subject }}</div>
+                                                                                <div class="class-room">{{ class.room }}</div>
+                                                                                <div class="faculty-name">{{ class.faculty }}</div>
+                                                                            </div>
+                                                                        {% endfor %}
+                                                                    </div>
+                                                                {% else %}
+                                                                    <p class="no-classes">No classes scheduled</p>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <div class="alert alert-info mb-0">
+                                                    <i class="fas fa-info-circle me-2"></i>
+                                                    No schedule data available for this section.
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                No sections available in this timetable.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                No timetables available at the moment.
+            </div>
+        {% endif %}
+    </div>
+
+    <footer class="mt-4">
+        <p class="text-muted">&copy; {{ current_year }} Digital Notice Board. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        .day-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1.25rem;
+            height: 100%;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .day-header {
+            color: #1a73e8;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .class-item {
+            background-color: #f8f9fa;
+            border-left: 4px solid #1a73e8;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: transform 0.2s ease;
+        }
+        
+        .class-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .class-time {
+            color: #1a73e8;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .class-subject {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .class-details {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .class-details i {
+            width: 20px;
+            margin-right: 5px;
+        }
+        
+        .section-tabs .nav-tabs {
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .section-tabs .nav-link {
+            color: #6c757d;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            font-weight: 500;
+        }
+        
+        .section-tabs .nav-link:hover {
+            color: #1a73e8;
+            border: none;
+        }
+        
+        .section-tabs .nav-link.active {
+            color: #1a73e8;
+            border: none;
+            border-bottom: 2px solid #1a73e8;
+        }
+    </style>
+</body>
+</html>

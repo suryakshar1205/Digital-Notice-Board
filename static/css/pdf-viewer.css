@@ -1,0 +1,279 @@
+/* PDF Viewer Modal Styles */
+.pdf-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+}
+
+.pdf-modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pdf-modal-content {
+    background-color: #fff;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    width: 95%;
+    height: 90%;
+    max-width: 1200px;
+    position: relative;
+    overflow: hidden;
+    animation: pdfModalSlideIn 0.3s ease-out;
+}
+
+@keyframes pdfModalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.pdf-modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.pdf-modal-title {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pdf-modal-title i {
+    font-size: 1.1rem;
+}
+
+.pdf-modal-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+.pdf-modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.pdf-modal-body {
+    height: calc(100% - 70px);
+    padding: 0;
+    position: relative;
+}
+
+.pdf-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background-color: #f8f9fa;
+}
+
+.pdf-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background-color: #f8f9fa;
+    color: #6c757d;
+}
+
+.pdf-loading-spinner {
+    border: 4px solid #e9ecef;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.pdf-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background-color: #f8f9fa;
+    color: #dc3545;
+    text-align: center;
+    padding: 20px;
+}
+
+.pdf-error i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    opacity: 0.7;
+}
+
+.pdf-error h4 {
+    margin-bottom: 10px;
+    color: #dc3545;
+}
+
+.pdf-error p {
+    margin-bottom: 20px;
+    color: #6c757d;
+}
+
+.pdf-error .btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.pdf-error .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+/* PDF Preview Button Styles */
+.pdf-preview-btn {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: 8px;
+    text-decoration: none;
+}
+
+.pdf-preview-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.pdf-preview-btn i {
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .pdf-modal-content {
+        width: 98%;
+        height: 95%;
+        border-radius: 8px;
+    }
+    
+    .pdf-modal-header {
+        padding: 12px 15px;
+    }
+    
+    .pdf-modal-title {
+        font-size: 1rem;
+    }
+    
+    .pdf-modal-close {
+        width: 35px;
+        height: 35px;
+        font-size: 1.2rem;
+    }
+    
+    .pdf-preview-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .pdf-modal-content {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+    }
+    
+    .pdf-modal-header {
+        padding: 10px 12px;
+    }
+    
+    .pdf-modal-title {
+        font-size: 0.9rem;
+    }
+    
+    .pdf-preview-btn {
+        padding: 5px 10px;
+        font-size: 0.75rem;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .pdf-modal-content {
+        background-color: #2d3748;
+        color: #e2e8f0;
+    }
+    
+    .pdf-modal-header {
+        background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+    }
+    
+    .pdf-iframe {
+        background-color: #1a202c;
+    }
+    
+    .pdf-loading,
+    .pdf-error {
+        background-color: #1a202c;
+        color: #a0aec0;
+    }
+    
+    .pdf-error h4 {
+        color: #fc8181;
+    }
+    
+    .pdf-error p {
+        color: #a0aec0;
+    }
+} 
